@@ -2,7 +2,7 @@
 # js2png
 # Javascript to PNG compression utility
 #
-# Inspired by Jacob Sedelin of nihilogic.dk
+# Inspired by Jacob Seidelin of nihilogic.dk
 # by anamii
 require 'rubygems'
 require 'sinatra'
@@ -19,18 +19,32 @@ end
 
 post "/" do
     @message = nil
-    unless params[:file] &&
-        (tmpfile = params[:file][:tempfile]) &&
-        (name = params[:file][:filename])
-        @message = "No file selected"
-        return haml :index
+    data = nil
+    size = 0
+
+    if (params[:file] && params[:file][:tempfile])
+        # user uploaded a file
+        tmpfile = params[:file][:tempfile]
+        data = tmpfile.read()
+        size = tmpfile.size
+        if (size > 262144)
+            @message = "File is too big.."
+            data = nil
+            return haml :index
+        end    
+    else
+        # user filled in the textbox
+        data = params[:source]
+        if (data.length > 0)
+            size = data.length
+        else
+            data = nil
+            @message = "No text entered or file selected."
+        end
     end
+
     
-    size = tmpfile.size
-    if (size > 262144)
-        @message = "File is too big.."
-        return haml :index
-    end
+    if (!data) then return haml :index end
     
     begin
         # create the PNG
@@ -39,7 +53,6 @@ post "/" do
         height = width
 
         img = ChunkyPNG::Image.new(width, height)
-        data = tmpfile.read()
         #puts data
 
         # convert each character into a colour and place them in the right place in the image.
@@ -53,7 +66,7 @@ post "/" do
         end
         img.save("public/image.png", :color_mode => ChunkyPNG::COLOR_INDEXED, :bit_depth => 8, :compression => Zlib::BEST_COMPRESSION)
         @uploaded = true        
-        @message = "Upload complete"
+        @message = "Conversion complete"
     rescue
         @uploaded = false
         @message = "Could not create image.. Try again"
@@ -91,10 +104,10 @@ __END__
 %form(method="post" action="/" enctype="multipart/form-data")
     %input(type="file" id="file" name="file")
     %br
+    %textarea(id="source" name="source" cols="80" rows="15")   
     %input(type="submit" value="Convert!")
 - if @uploaded
     %img{:src=>"image.png", :id=>"png"}
-    %textarea(id="source" cols="80" rows="15")   
     :javascript
         window.onload = function(){ 
             loadPNG();
@@ -107,8 +120,20 @@ __END__
                 source.value=d;
             });
         }
-    %button(onclick="loadPNG();") Reparse
-	
+    %h2 What you need to do now
+    .step
+        .title Step 1
+        %p Save the image above (Right click and select save as.)
+    .step
+        .title Step 2
+        %p Save the javascript below (Right click and select save as.)
+        %a(href="pngdata.js") PngData.js
+    .step
+        .title Step 3
+        %p Copy and paste the following javascript to load the PNG as Javascript:
+        .code 
+            loadPNGData("image.png", function(d) {eval(d);});
+        
 @@stylesheet
 body
     :font-family "Lucida Grande", sans-serif
@@ -151,3 +176,13 @@ h4.subtitle
     :background-color #333
     :color white
     :border solid 2px #333
+.step
+    :padding 6px
+    :border-radius 10px
+    :-webkit-border-radius 10px
+    :-moz-border-radius 10px
+    :color #333
+    :border dotted 2px #666
+    :margin-bottom 6px
+    .title
+        :font-size 120%
