@@ -43,7 +43,7 @@ post "/" do
         end
     end
 
-    
+    # if there is no data then stop..    
     if (!data) then return haml :index end
     
     begin
@@ -64,6 +64,8 @@ post "/" do
                 i+=1
             end
         end
+
+        # save the image - in 8-bit colour
         img.save("public/image.png", :color_mode => ChunkyPNG::COLOR_INDEXED, :bit_depth => 8, :compression => Zlib::BEST_COMPRESSION)
         @uploaded = true        
         @message = "Conversion complete"
@@ -79,6 +81,7 @@ get '/stylesheet.css' do
     content_type 'text/css', :charset => 'utf-8'
     sass :stylesheet
 end
+
 
 __END__
 
