@@ -23,8 +23,8 @@ This is a Sinatra based web app and apart from the gems in the Bundler gemfile t
     
 ## Shotgun
 
-    If you feel that you'd need to edit the file while you are running the app - you might want to install
-    the shotgun gem..
+If you feel that you'd need to edit the file while you are running the app - you might want to install
+the shotgun gem..
 
     > gem install shotgun
     > shotgun js2png.rb
