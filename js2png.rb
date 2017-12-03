@@ -59,7 +59,12 @@ post "/" do
         i=0
         (0...height).each do |y|
             (0...width).each do |x|
-                color = data[i] || 0
+                begin 
+                    color = data[i].ord || 0
+                rescue
+                    # sometimes data[i] seems to be nil
+                    color = 0
+                end
                 img[x,y] = ChunkyPNG::Color.rgb(color, color, color)
                 i+=1
             end
@@ -69,9 +74,10 @@ post "/" do
         img.save("public/image.png", :color_mode => ChunkyPNG::COLOR_INDEXED, :bit_depth => 8, :compression => Zlib::BEST_COMPRESSION)
         @uploaded = true        
         @message = "Conversion complete"
-    rescue
+    rescue => e
         @uploaded = false
         @message = "Could not create image.. Try again"
+        puts e
     end
 
     haml :index
@@ -107,7 +113,7 @@ __END__
 %form(method="post" action="/" enctype="multipart/form-data")
     %input(type="file" id="file" name="file")
     %br
-    %textarea(id="source" name="source" cols="80" rows="15")   
+    %textarea(id="source" name="source")   
     %input(type="submit" value="Convert!")
 - if @uploaded
     %img{:src=>"image.png", :id=>"png"}
@@ -139,53 +145,56 @@ __END__
         
 @@stylesheet
 body
-    :font-family "Lucida Grande", sans-serif
-    :font-size 12px
-    :background #f1f1f1
+    font-family: "Lucida Grande", sans-serif
+    font-size: 12px
+    background: #f1f1f1
 h1,h2,h3,h4,h5,h6
-    :font-family "Helvetica", sans-serif
-    :margin 0
+    font-family: "Helvetica", sans-serif
+    margin: 0
 h1
-    :font-size 48pt
-    :letter-spacing -0.05em
+    font-size: 48pt
+    letter-spacing: -0.05em
 h4
-    :font-size 24pt
+    font-size: 24pt
 h1.title
-    :color #ccc
-    :margin-top -67px
+    color: #ccc
+    margin-top: -67px
 h4.subtitle
-    :color #ccc
+    color: #ccc
 #container
-    :width 600px
-    :margin 57px auto 3px
-    :padding 5px
-    :background #fff
-    :border 5px solid #ccc
-    :-moz-border-radius 10px
-    :-webkit-border-radius 10px
-    :border-radius 10px
+    width: 600px
+    margin: 57px auto 3px
+    padding: 5px
+    background: #fff
+    border: 5px solid #ccc
+    -moz-border-radius: 10px
+    -webkit-border-radius: 10px
+    border-radius: 10px
+textarea    
+    width: 100%
+    height: 300px
 #footer
-    :width 600px
-    :margin 0 auto
-    :text-align center
-    :color #888
+    width: 600px
+    margin: 0 auto
+    text-align: center
+    color: #888
     a
         :color #888
 .message
-    :padding 2px
-    :border-radius 10px
-    :-webkit-border-radius 10px
-    :-moz-border-radius 10px
-    :background-color #333
-    :color white
-    :border solid 2px #333
+    padding: 2px
+    border-radius: 10px
+    -webkit-border-radius: 10px
+    -moz-border-radius: 10px
+    background-color: #333
+    color: white
+    border: solid 2px #333
 .step
-    :padding 6px
-    :border-radius 10px
-    :-webkit-border-radius 10px
-    :-moz-border-radius 10px
-    :color #333
-    :border dotted 2px #666
-    :margin-bottom 6px
+    padding: 6px
+    border-radius: 10px
+    -webkit-border-radius: 10px
+    -moz-border-radius: 10px
+    color: #333
+    border: dotted 2px #666
+    margin-bottom: 6px
     .title
-        :font-size 120%
+        font-size: 120%
